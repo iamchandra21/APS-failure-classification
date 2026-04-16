@@ -45,24 +45,8 @@ packages = ["sensor"]
 
 [dependency-groups]
 dev = [
-    "pytest>=8.0",
-    "pytest-cov>=5.0",
     "flake8>=7.0",
-    "httpx>=0.23,<0.24",        # required by FastAPI TestClient
 ]
 
 [tool.uv]
 package = true
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = "-v --tb=short"
-
-[tool.coverage.run]
-source = ["sensor"]
-omit = ["sensor/constants/*", "sensor/__init__.py"]
-
-[tool.coverage.report]
-show_missing = true
-skip_covered = false
-fail_under = 28

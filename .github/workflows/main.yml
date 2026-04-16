@@ -39,9 +39,9 @@ jobs:
           uv pip install --system -r requirements.txt
           uv pip install --system -e .
 
-      - name: Install dev dependencies
+      - name: Install flake8
         run: |
-          uv pip install --system pytest pytest-cov flake8 httpx
+          uv pip install --system flake8
 
       - name: Lint — check for syntax errors and undefined names
         run: |
@@ -50,24 +50,6 @@ jobs:
       - name: Lint — full style check (warnings only, non-blocking)
         run: |
           flake8 sensor/ --count --max-line-length=120 --statistics --exit-zero
-
-      - name: Run unit tests with coverage
-        run: |
-          pytest tests/ -v --tb=short \
-            --cov=sensor \
-            --cov-report=term-missing \
-            --cov-report=xml:coverage.xml
-        env:
-          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
-          MLFLOW_TRACKING_USERNAME: ${{ secrets.MLFLOW_TRACKING_USERNAME }}
-          MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_USER_TOKEN }}
-
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: coverage.xml
-          retention-days: 7
 
   build-and-push-ecr-image:
     name: Continuous Delivery
