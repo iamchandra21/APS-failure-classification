@@ -5,7 +5,8 @@ on:
     branches:
       - main
     paths-ignore:
-      - 'README.md'
+      - '**/*.md'
+      - '*.md'
       - 'flowcharts/**'
       - 'notebooks/**'
       - '.gitignore'
