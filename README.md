@@ -286,19 +286,6 @@ MONGO_DB_URL
 ```
 
 ---
-
-## Future Improvements / Roadmap
-
-- [ ] **Hyperparameter tuning** — Implement the `perform_hyperparameter_tuning()` stub using Optuna or GridSearchCV
-- [ ] **Unit test coverage** — Add `tests/` with pytest coverage for all 6 pipeline components
-- [ ] **Custom cost metric** — Replace F1-score objective with a cost-weighted metric (`50×FN + FP`)
-- [ ] **SHAP explainability** — Add feature importance analysis and SHAP summary plots
-- [ ] **Prediction confidence scores** — Return `predict_proba` alongside binary labels
-- [ ] **Model monitoring** — Add prediction drift detection in production
-- [ ] **Async training endpoint** — Background task with status polling endpoint
-- [ ] **Kubernetes deployment** — Replace single EC2 instance with EKS for auto-scaling
-- [ ] **MLflow / W&B integration** — Experiment tracking and model registry
-
 ---
 
 ## License
@@ -317,4 +304,3 @@ This project is licensed under the [Apache License 2.0](LICENSE).
 
 ---
 
-> _Built to demonstrate production-grade ML engineering: modular pipeline design, cloud infrastructure, and automated deployment._
