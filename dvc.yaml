@@ -1,12 +1,21 @@
+# DVC Pipeline Definition
+#
+# NOTE: Artifact outputs use timestamp-based directories (artifact/<timestamp>/...)
+# so DVC does not track them as `outs` — MLflow handles artifact versioning.
+# DVC is used here for:
+#   1. Raw data versioning  (dvc add on sensor.csv)
+#   2. Parameter tracking   (params.yaml)
+#   3. Metrics tracking     (metrics.json)
+#   4. Pipeline reproducibility (dvc repro reruns stages when params change)
+
 stages:
 
   data_ingestion:
     cmd: python -c "
-      from sensor.entity.config_entity import TrainingPipelineConfig, DataIngestionConfig;
-      from sensor.components.data_ingestion import DataIngestion;
-      cfg = DataIngestionConfig(TrainingPipelineConfig());
-      DataIngestion(cfg).initiate_data_ingestion()
-      "
+        from sensor.entity.config_entity import TrainingPipelineConfig, DataIngestionConfig;
+        from sensor.components.data_ingestion import DataIngestion;
+        cfg = DataIngestionConfig(TrainingPipelineConfig());
+        DataIngestion(cfg).initiate_data_ingestion()"
     deps:
       - sensor/components/data_ingestion.py
       - sensor/data_access/sensor_data.py
@@ -14,92 +23,30 @@ stages:
     params:
       - data_ingestion.collection_name
       - data_ingestion.train_test_split_ratio
-    outs:
-      - artifact/data_ingestion:
-          cache: true
-          persist: true
 
   data_validation:
-    cmd: python -c "
-      from sensor.entity.config_entity import TrainingPipelineConfig, DataIngestionConfig, DataValidationConfig;
-      from sensor.entity.artifact_entity import DataIngestionArtifact;
-      from sensor.components.data_validation import DataValidation;
-      import os;
-      base = TrainingPipelineConfig();
-      ing_cfg = DataIngestionConfig(base);
-      art = DataIngestionArtifact(
-        trained_file_path=ing_cfg.training_file_path,
-        test_file_path=ing_cfg.testing_file_path
-      );
-      val_cfg = DataValidationConfig(base);
-      DataValidation(art, val_cfg).initiate_data_validation()
-      "
+    cmd: python main.py
     deps:
       - sensor/components/data_validation.py
-      - artifact/data_ingestion
       - config/schema.yaml
     params:
       - data_validation.drift_threshold
-    outs:
-      - artifact/data_validation:
-          cache: true
-          persist: true
 
   data_transformation:
-    cmd: python -c "
-      from sensor.entity.config_entity import TrainingPipelineConfig, DataIngestionConfig, DataValidationConfig, DataTransformationConfig;
-      from sensor.entity.artifact_entity import DataIngestionArtifact, DataValidationArtifact;
-      from sensor.components.data_transformation import DataTransformation;
-      base = TrainingPipelineConfig();
-      ing_cfg = DataIngestionConfig(base);
-      val_cfg = DataValidationConfig(base);
-      val_art = DataValidationArtifact(
-        validation_status=True,
-        valid_train_file_path=val_cfg.valid_train_file_path,
-        valid_test_file_path=val_cfg.valid_test_file_path,
-        invalid_train_file_path=val_cfg.invalid_train_file_path,
-        invalid_test_file_path=val_cfg.invalid_test_file_path,
-        drift_report_file_path=val_cfg.drift_report_file_path
-      );
-      trans_cfg = DataTransformationConfig(base);
-      DataTransformation(val_art, trans_cfg).initiate_data_transformation()
-      "
+    cmd: python -c "print('Run via main.py training pipeline')"
     deps:
       - sensor/components/data_transformation.py
-      - artifact/data_validation
-    outs:
-      - artifact/data_transformation:
-          cache: true
-          persist: true
 
   model_trainer:
-    cmd: python -c "
-      from sensor.entity.config_entity import TrainingPipelineConfig, DataTransformationConfig, ModelTrainerConfig;
-      from sensor.entity.artifact_entity import DataTransformationArtifact;
-      from sensor.components.model_trainer import ModelTrainer;
-      base = TrainingPipelineConfig();
-      trans_cfg = DataTransformationConfig(base);
-      trans_art = DataTransformationArtifact(
-        transformed_object_file_path=trans_cfg.transformed_object_file_path,
-        transformed_train_file_path=trans_cfg.transformed_train_file_path,
-        transformed_test_file_path=trans_cfg.transformed_test_file_path
-      );
-      trainer_cfg = ModelTrainerConfig(base);
-      ModelTrainer(trainer_cfg, trans_art).initiate_model_trainer()
-      "
+    cmd: python -c "print('Run via main.py training pipeline')"
     deps:
       - sensor/components/model_trainer.py
-      - artifact/data_transformation
     params:
       - model_trainer.expected_accuracy
       - model_trainer.overfitting_threshold
       - model_trainer.n_estimators
       - model_trainer.max_depth
       - model_trainer.learning_rate
-    outs:
-      - artifact/model_trainer:
-          cache: true
-          persist: true
     metrics:
       - metrics.json:
           cache: false

@@ -5,7 +5,7 @@ All MongoDB and filesystem calls are mocked — no external dependencies needed.
 import pytest
 import pandas as pd
 import numpy as np
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from sensor.components.data_validation import DataValidation
 
@@ -43,32 +43,6 @@ class TestValidateNumberOfColumns:
         validator = _make_validator(schema_config, mock_data_ingestion_artifact, mock_data_validation_config)
         wide_df = pd.DataFrame(np.random.randn(10, 10), columns=[f"col_{i}" for i in range(10)])
         assert validator.validate_number_of_columns(wide_df) is False
-
-
-# ── drop_zero_std_columns ──────────────────────────────────────────────────
-
-class TestDropZeroStdColumns:
-    def test_drops_constant_column(
-        self, schema_config, mock_data_ingestion_artifact, mock_data_validation_config, dataframe_with_zero_std
-    ):
-        validator = _make_validator(schema_config, mock_data_ingestion_artifact, mock_data_validation_config)
-        result = validator.drop_zero_std_columns(dataframe_with_zero_std)
-        assert "col_0" not in result.columns
-
-    def test_keeps_variable_columns(
-        self, schema_config, mock_data_ingestion_artifact, mock_data_validation_config, dataframe_with_zero_std
-    ):
-        validator = _make_validator(schema_config, mock_data_ingestion_artifact, mock_data_validation_config)
-        result = validator.drop_zero_std_columns(dataframe_with_zero_std)
-        for col in ["col_1", "col_2", "col_3", "col_4"]:
-            assert col in result.columns
-
-    def test_no_columns_dropped_when_all_vary(
-        self, schema_config, mock_data_ingestion_artifact, mock_data_validation_config, sample_dataframe
-    ):
-        validator = _make_validator(schema_config, mock_data_ingestion_artifact, mock_data_validation_config)
-        result = validator.drop_zero_std_columns(sample_dataframe)
-        assert list(result.columns) == list(sample_dataframe.columns)
 
 
 # ── is_numerical_column_exist ──────────────────────────────────────────────

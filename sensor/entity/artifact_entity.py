@@ -1,9 +1,11 @@
 from dataclasses import dataclass
 
+
 @dataclass
 class DataIngestionArtifact:
     trained_file_path: str
     test_file_path: str
+
 
 @dataclass
 class DataValidationArtifact:
@@ -35,6 +37,7 @@ class ModelTrainerArtifact:
     train_metric_artifact: ClassificationMetricArtifact
     test_metric_artifact: ClassificationMetricArtifact
 
+
 @dataclass
 class ModelEvaluationArtifact:
     is_model_accepted: bool
@@ -43,6 +46,7 @@ class ModelEvaluationArtifact:
     trained_model_path: str
     trained_model_metric_artifact: ClassificationMetricArtifact
     best_model_metric_artifact: ClassificationMetricArtifact
+
 
 @dataclass
 class ModelPusherArtifact:

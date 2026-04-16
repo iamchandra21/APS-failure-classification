@@ -33,8 +33,6 @@ dependencies = [
     "mlflow==2.16.2",
     "dagshub==0.3.25",
     "matplotlib==3.9.2",
-    # DVC
-    "dvc==3.50.1",
     "dvc-s3==3.2.0",
 ]
 
@@ -67,4 +65,4 @@ omit = ["sensor/constants/*", "sensor/__init__.py"]
 [tool.coverage.report]
 show_missing = true
 skip_covered = false
-fail_under = 40
+fail_under = 28

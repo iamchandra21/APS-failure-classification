@@ -1,9 +1,13 @@
+import os
+
+import dill
+import numpy as np
+import yaml
+from typing import Any
+
 from sensor.exception import SensorException
 from sensor.logger import logging
-import yaml
-import sys, os, dill
-import numpy as np
-from typing import Any
+
 
 def read_yaml_file(file_path: str) -> dict:
     try:
@@ -11,20 +15,20 @@ def read_yaml_file(file_path: str) -> dict:
             return yaml.safe_load(yaml_file)
     except Exception as e:
         raise SensorException(str(e)) from e
-    
 
-def write_yaml_file(filepath: str, content: object, replace: bool = False)-> str:
+
+def write_yaml_file(filepath: str, content: object, replace: bool = False) -> str:
     try:
         if replace:
             if os.path.exists(filepath):
                 os.remove(filepath)
-        os.makedirs(os.path.dirname(filepath), exist_ok= True)
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
         with open(filepath, "w") as file:
             yaml.dump(content, file)
         return "Success"
     except Exception as e:
         raise SensorException(str(e)) from e
-    
+
 
 def save_numpy_array_data(file_path: str, array: np.array):
     """
@@ -65,10 +69,10 @@ def save_object(file_path: str, obj: object) -> None:
         raise SensorException(str(e)) from e
 
 
-def load_object(file_path: str, ) -> Any:
+def load_object(file_path: str) -> Any:
     try:
         if not os.path.exists(file_path):
-            raise Exception(f"The file: {file_path} is not exists")
+            raise Exception(f"The file: {file_path} does not exist")
         with open(file_path, "rb") as file_obj:
             return dill.load(file_obj)
     except Exception as e:

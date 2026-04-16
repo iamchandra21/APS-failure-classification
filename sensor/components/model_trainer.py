@@ -1,20 +1,18 @@
-from sensor.utils.main_utils import load_numpy_array_data
-from sensor.exception import SensorException
-from sensor.logger import logging
-import os, sys
-from sensor.entity.artifact_entity import DataTransformationArtifact, ModelTrainerArtifact
-from sensor.entity.config_entity import ModelTrainerConfig
-from sensor.ml.metric.classification_metric import get_classification_score
-from sensor.ml.model.estimator import SensorModel
-from sensor.utils.main_utils import save_object, load_object
-from xgboost import XGBClassifier
-import mlflow
-import mlflow.sklearn
+import os
 import dagshub
 import matplotlib
 matplotlib.use("Agg")  # non-interactive backend — safe for server environments
-import matplotlib.pyplot as plt
-from xgboost import plot_importance
+import matplotlib.pyplot as plt  # noqa: E402
+import mlflow  # noqa: E402
+import mlflow.sklearn  # noqa: E402
+from xgboost import XGBClassifier, plot_importance  # noqa: E402
+from sensor.entity.artifact_entity import DataTransformationArtifact, ModelTrainerArtifact  # noqa: E402
+from sensor.entity.config_entity import ModelTrainerConfig  # noqa: E402
+from sensor.exception import SensorException  # noqa: E402
+from sensor.logger import logging  # noqa: E402
+from sensor.ml.metric.classification_metric import get_classification_score  # noqa: E402
+from sensor.ml.model.estimator import SensorModel  # noqa: E402
+from sensor.utils.main_utils import load_numpy_array_data, load_object, save_object  # noqa: E402
 
 
 def _init_dagshub():

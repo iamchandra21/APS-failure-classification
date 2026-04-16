@@ -1,7 +1,7 @@
 import os
 from sensor.constants.s3_bucket import TRAINING_BUCKET_NAME
 
-SAVED_MODEL_DIR =os.path.join("saved_models")
+SAVED_MODEL_DIR = os.path.join("saved_models")
 
 """
 Defining common constant variables for training pipeline
