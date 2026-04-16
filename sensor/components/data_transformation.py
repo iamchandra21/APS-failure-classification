@@ -35,7 +35,7 @@ class DataTransformation:
             self.data_transformation_config = data_transformation_config
 
         except Exception as e:
-            raise SensorException(e, sys)
+            raise SensorException(str(e))
 
 
     @staticmethod
@@ -43,7 +43,7 @@ class DataTransformation:
         try:
             return pd.read_csv(file_path)
         except Exception as e:
-            raise SensorException(e, sys)
+            raise SensorException(str(e))
 
 
     @classmethod
@@ -61,7 +61,7 @@ class DataTransformation:
             return preprocessor
 
         except Exception as e:
-            raise SensorException(e, sys) from e
+            raise SensorException(str(e)) from e
 
     
     def initiate_data_transformation(self) -> DataTransformationArtifact:
@@ -118,5 +118,5 @@ class DataTransformation:
             logging.info(f"Data transformation artifact: {data_transformation_artifact}")
             return data_transformation_artifact
         except Exception as e:
-            raise SensorException(e, sys) from e
+            raise SensorException(str(e)) from e
 

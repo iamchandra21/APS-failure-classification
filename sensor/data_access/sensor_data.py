@@ -2,7 +2,7 @@ import sys
 from typing import Optional
 import numpy as np
 import pandas as pd
-from sensor.configuration.monogo_db_connection import MongoDBClient
+from sensor.configuration.mongo_db_connection import MongoDBClient
 from sensor.constants.database import DATABASE_NAME
 from sensor.exception import SensorException
 
@@ -15,7 +15,7 @@ class SensorData:
         try:
             self.mongo_client = MongoDBClient(database_name= DATABASE_NAME)
         except Exception as e:
-            raise SensorException(e, sys)
+            raise SensorException(str(e))
     
     def export_collection_as_dataframe(self, collection_name: str, database_name: Optional[str] = None) -> pd.DataFrame:
         try:
@@ -28,7 +28,7 @@ class SensorData:
             else:
                 collection = self.mongo_client[database_name][collection_name]
             
-            df = pd.DataFrame(list(collection.find()))
+            df = pd.DataFrame(list(collection.find({})))
 
             if "_id" in df.columns.to_list():
                 df = df.drop(columns=["_id"], axis = 1)
@@ -38,4 +38,4 @@ class SensorData:
 
             return df
         except Exception as e:
-            raise SensorException(e, sys)
+            raise SensorException(str(e))

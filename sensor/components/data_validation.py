@@ -15,7 +15,7 @@ class DataValidation:
             self.data_validation_config = data_validation_config
             self._schema_config = read_yaml_file(SCHEMA_FILE_PATH)
         except Exception as e:
-            raise SensorException(e, sys)
+            raise SensorException(str(e))
 
     def validate_number_of_columns(self, dataframe: pd.DataFrame)->bool:
         try:
@@ -24,9 +24,8 @@ class DataValidation:
                 return True
             return False
         except Exception as e:
-            raise SensorException(e, sys)
-        
-    #TODO: drop_zero_std_columns
+            raise SensorException(str(e))
+
     def drop_zero_std_columns(self, dataframe):
         pass
 
@@ -43,14 +42,14 @@ class DataValidation:
             logging.info(f"Missing numerical columns : [{missing_numerical_columns}]")
             return numerical_columns_present
         except Exception as e:
-            raise SensorException(e, sys)
+            raise SensorException(str(e))
     
     @staticmethod
     def read_data(file_path)-> pd.DataFrame:
         try:
             return pd.read_csv(file_path)
         except Exception as e:
-            raise SensorException(e, sys)
+            raise SensorException(str(e))
 
     def detect_dataset_drift(self,base_df,current_df,threshold=0.05)-> bool:
         try:
@@ -80,7 +79,7 @@ class DataValidation:
             write_yaml_file(filepath=drift_report_file_path,content=report)
             return status
         except Exception as e:
-            raise SensorException(e, sys)
+            raise SensorException(str(e))
 
     def initiate_data_validation(self) -> DataValidationArtifact:
         try:
@@ -127,4 +126,4 @@ class DataValidation:
             logging.info(f"Data validation artifact: {data_validation_artifact}")
             return data_validation_artifact
         except Exception as e:
-            raise SensorException(e, sys)
+            raise SensorException(str(e))

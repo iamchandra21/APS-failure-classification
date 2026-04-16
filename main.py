@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 from fastapi.responses import JSONResponse
 import os
 import datetime
+import time
+from starlette.middleware.base import BaseHTTPMiddleware
 
 # Sensor-related imports
 from sensor.pipeline.training_pipeline import TrainPipeline
@@ -30,6 +32,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+class RequestLoggingMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        start_time = time.time()
+        response = await call_next(request)
+        duration = round(time.time() - start_time, 4)
+        logging.info(
+            f"{request.method} {request.url.path} "
+            f"→ {response.status_code} [{duration}s]"
+        )
+        return response
+
+app.add_middleware(RequestLoggingMiddleware)
 
 @app.get("/", tags=["authentication"])
 async def index():
@@ -79,8 +93,10 @@ async def predict_route(file: UploadFile = File(...)):
 
         # Make predictions
         y_pred = sensor_model.model.predict(transformed_data)
+        y_proba = sensor_model.model.predict_proba(transformed_data)
         df["predicted_column"] = y_pred
         df["predicted_column"] = df["predicted_column"].replace(TargetValueMapping().reverse_mapping())
+        df["confidence_score"] = y_proba[:, 1].round(4)
 
         # Save predictions with timestamp
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")

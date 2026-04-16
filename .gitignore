@@ -103,12 +103,15 @@ celerybeat.pid
 
 # Environments
 .env
-.venv
+.venv/
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
+
+# uv
+uv.lock
 
 # Spyder project settings
 .spyderproject
@@ -135,7 +138,7 @@ dmypy.json
 # scerts
 credentials.yml
 /Research
-/artifact/
+artifact/*
 /notebooks/sensor.csv
 saved_models/*
 logs/*
@@ -144,3 +147,13 @@ test.py
 /logs/
 /notebooks/aps_failure_training_set1.csv
 /predictions/
+
+# MLflow
+mlruns/
+mlartifacts/
+
+# DVC
+/tmp/
+.dvc/cache/
+.dvc/tmp/
+.dvc/plots/

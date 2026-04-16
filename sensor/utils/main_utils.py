@@ -10,7 +10,7 @@ def read_yaml_file(file_path: str) -> dict:
         with open(file_path, "rb") as yaml_file:
             return yaml.safe_load(yaml_file)
     except Exception as e:
-        raise SensorException(e, sys) from e
+        raise SensorException(str(e)) from e
     
 
 def write_yaml_file(filepath: str, content: object, replace: bool = False)-> str:
@@ -23,7 +23,7 @@ def write_yaml_file(filepath: str, content: object, replace: bool = False)-> str
             yaml.dump(content, file)
         return "Success"
     except Exception as e:
-        raise SensorException(e, sys) from e
+        raise SensorException(str(e)) from e
     
 
 def save_numpy_array_data(file_path: str, array: np.array):
@@ -38,7 +38,7 @@ def save_numpy_array_data(file_path: str, array: np.array):
         with open(file_path, "wb") as file_obj:
             np.save(file_obj, array)
     except Exception as e:
-        raise SensorException(e, sys) from e
+        raise SensorException(str(e)) from e
 
 
 def load_numpy_array_data(file_path: str) -> np.array:
@@ -51,7 +51,7 @@ def load_numpy_array_data(file_path: str) -> np.array:
         with open(file_path, "rb") as file_obj:
             return np.load(file_obj)
     except Exception as e:
-        raise SensorException(e, sys) from e
+        raise SensorException(str(e)) from e
 
 
 def save_object(file_path: str, obj: object) -> None:
@@ -62,7 +62,7 @@ def save_object(file_path: str, obj: object) -> None:
             dill.dump(obj, file_obj)
         logging.info("Exited the save_object method of MainUtils class")
     except Exception as e:
-        raise SensorException(e, sys) from e
+        raise SensorException(str(e)) from e
 
 
 def load_object(file_path: str, ) -> Any:
@@ -72,4 +72,4 @@ def load_object(file_path: str, ) -> Any:
         with open(file_path, "rb") as file_obj:
             return dill.load(file_obj)
     except Exception as e:
-        raise SensorException(e, sys) from e
+        raise SensorException(str(e)) from e

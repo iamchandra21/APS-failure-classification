@@ -6,7 +6,7 @@ from sensor.entity.artifact_entity import DataValidationArtifact, DataTransforma
 from sensor.entity.config_entity import ModelEvaluationConfig
 import os, sys
 import  pandas as pd
-from sensor.ml.metric.classification_merric import get_classification_score
+from sensor.ml.metric.classification_metric import get_classification_score
 from sensor.utils.main_utils import save_object, load_object, write_yaml_file
 from sensor.ml.model.estimator import SensorModel, ModelResolver, TargetValueMapping
 from sensor.constants.training_pipeline import TARGET_COLUMN
@@ -19,22 +19,17 @@ class ModelEvaluation:
             # self.data_transformation_artifact = data_transformation_artifact
             self.model_trainer_artifact = model_trainer_artifact
         except Exception as e:
-            raise SensorException(e, sys)
+            raise SensorException(str(e))
         
 
     def initiate_model_evaluation(self)-> ModelEvaluationArtifact:
         try:
             logging.info("Initiating ModelEvaluation")
-            # Valid train and test file dataframe
-            valid_train_file_path = self.data_validation_artifact.valid_train_file_path
             valid_test_file_path = self.data_validation_artifact.valid_test_file_path
-            train_df = pd.read_csv(valid_train_file_path)
-            test_df = pd.read_csv(valid_test_file_path)
-
-            df = pd.concat([train_df, test_df])
+            df = pd.read_csv(valid_test_file_path)
             y_true = df[TARGET_COLUMN]
-            y_true.replace(TargetValueMapping().to_dict(), inplace= True)
-            df.drop(TARGET_COLUMN, axis= 1, inplace= True)
+            y_true.replace(TargetValueMapping().to_dict(), inplace=True)
+            df.drop(TARGET_COLUMN, axis=1, inplace=True)
 
             train_model_file_path = self.model_trainer_artifact.trained_model_file_path
             model_resolver = ModelResolver()
@@ -84,4 +79,4 @@ class ModelEvaluation:
             logging.info(f"Model Evaluation artifact: {model_evaluation_artifact}")
             return model_evaluation_artifact
         except Exception as e:
-            raise SensorException(e, sys)
+            raise SensorException(str(e))

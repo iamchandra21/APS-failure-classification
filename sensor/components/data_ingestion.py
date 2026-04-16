@@ -33,10 +33,16 @@ class DataIngestion:
             dir_path = os.path.dirname(feature_store_file_path)
             os.makedirs(dir_path, exist_ok= True)
             dataframe.to_csv(feature_store_file_path, index = False, header = True)
+            logging.info(f"Exported dataframe shape: {dataframe.shape} — rows: {len(dataframe)}, cols: {len(dataframe.columns)}")
+            if len(dataframe) == 0:
+                raise Exception(
+                    f"MongoDB collection '{self.data_ingestion_config.collection_name}' returned 0 documents. "
+                    f"Please verify the collection has data and the collection name is correct."
+                )
             return dataframe
         
         except Exception as e:
-            raise SensorException(e, sys)
+            raise SensorException(str(e))
 
     def split_data_as_train_test(self, dataframe : pd.DataFrame) -> None:
         """
@@ -62,15 +68,19 @@ class DataIngestion:
             logging.info(f"Exported train and test file path")
             
         except Exception as e:
-            raise SensorException(e, sys)
+            raise SensorException(str(e))
 
     def initiate_data_ingestion(self) -> DataIngestionArtifact:
         try:
             dataframe = self.export_data_into_feature_store()
-            dataframe = dataframe.drop(self._schema_config["drop_columns"],axis=1)
+            drop_cols = [c for c in self._schema_config["drop_columns"] if c in dataframe.columns]
+            if drop_cols:
+                logging.info(f"Dropping columns: {drop_cols}")
+            dataframe = dataframe.drop(drop_cols, axis=1)
             self.split_data_as_train_test(dataframe=dataframe)
             data_ingestion_artifact = DataIngestionArtifact(trained_file_path=self.data_ingestion_config.training_file_path
                                                             , test_file_path=self.data_ingestion_config.testing_file_path)
+            logging.info(f"Data ingestion artifact: {data_ingestion_artifact}")
             return data_ingestion_artifact
         except Exception as e:
-            raise SensorException(e, sys)
+            raise SensorException(str(e))

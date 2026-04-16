@@ -1,0 +1,21 @@
+# DVC pipeline parameters
+# Any change here will cause dvc repro to re-run affected downstream stages.
+
+data_ingestion:
+  collection_name: sensor
+  train_test_split_ratio: 0.2
+
+data_validation:
+  drift_threshold: 0.05          # p-value threshold for KS test (below = drift detected)
+
+model_trainer:
+  expected_accuracy: 0.6         # minimum F1 on train set to accept model
+  overfitting_threshold: 0.05    # max allowed gap between train and test F1
+  # GridSearchCV search space
+  n_estimators: [100, 200]
+  max_depth: [4, 6]
+  learning_rate: [0.05, 0.1]
+  scale_pos_weight: [1, 10, 50]
+
+model_evaluation:
+  changed_threshold_score: 0.02  # min F1 improvement over production model to push

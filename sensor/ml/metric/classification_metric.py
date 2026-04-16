@@ -25,4 +25,4 @@ def get_classification_score(y_true, y_pred)-> ClassificationMetricArtifact:
         )
         return classification_metric
     except Exception as e:
-        raise SensorException(e, sys)
+        raise SensorException(str(e))

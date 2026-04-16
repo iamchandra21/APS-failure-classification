@@ -1,212 +1,320 @@
-<h1 align="center">APS Failure Classification</h1>
+# APS Failure Classification
 
-## Project Overview
+**Predicting Air Pressure System failures in heavy-duty trucks before they happen — saving $50 per missed fault.**
 
-### Problem Statement
+[![CI/CD](https://github.com/iamchandra21/APS-failure-classification/actions/workflows/main.yml/badge.svg)](https://github.com/YOUR_USERNAME/APS-failure-classification/actions)
+[![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.95-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![XGBoost](https://img.shields.io/badge/XGBoost-1.7-orange)](https://xgboost.readthedocs.io/)
+[![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![AWS](https://img.shields.io/badge/AWS-EC2%20%7C%20ECR%20%7C%20S3-FF9900?logo=amazon-aws&logoColor=white)](https://aws.amazon.com/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue)](LICENSE)
 
-- The Air Pressure System (APS) is a critical component of a heavy-duty vehicle that uses compressed air to force a piston to provide pressure to the brake pads, slowing the vehicle down. The benefits of using an APS instead of a hydraulic system are the easy availability and long-term sustainability of natural air.
-- This is a Binary Classification problem, in which the positive class indicates that the failure was caused by a certain component of the APS, while the negative class indicates that the failure was caused by something else.
+---
 
-### Solution Proposed
+## Description
 
-- In this project, the system in focus is the Air Pressure system (APS) which generates pressurized air that are utilized in various functions in a truck, such as braking and gear changes. The datasets positive class corresponds to component failures for a specific component of the APS system. The negative class corresponds to trucks with failures for components not related to the APS system.
-- **The problem is to reduce the cost due to unnecessary repairs. So it is required to minimize the false predictions.**
+This project builds an end-to-end machine learning pipeline to classify Air Pressure System (APS) failures in Scania heavy-duty trucks. The model identifies whether a fault originates from the APS or another unrelated component, enabling maintenance teams to avoid $50 in unnecessary repair costs for every false negative (missed APS fault).
 
-#### Cost-metric of miss-classification
+The system ingests raw sensor data from MongoDB, validates schema integrity, handles class imbalance with SMOTETomek resampling, trains an XGBoost classifier, evaluates performance against the current production model, and deploys via a Dockerized FastAPI service on AWS EC2 — all orchestrated through a single training pipeline with GitHub Actions CI/CD.
 
-| True class/ Predicted class | True class | Negative |
-|-----------------------------|------------|----------|
-| Positive                    | -          | Cost_1   |
-| Negative                    | Cost_2     | -        |
+---
 
-- The total cost of a prediction model is the sum of `Cost_1` multiplied by the number of Instances with type 1 failure and `Cost_2` with the number of instances with type 2 failure, resulting in a `Total_cost`. In this case `Cost_1` refers to the cost that an unnecessary check needs to be done by a mechanic at a workshop, while `Cost_2` refer to the cost of missing a faulty truck, which may cause a breakdown. 
-- **Total_cost = Cost_1 * No_Instances + Cost_2 * No_Instances.**
-- From the above problem statement we could observe that, we have to reduce false positives and false negatives. More importantly we have to **reduce false negatives, since cost incurred due to false negative is 50 times higher than the false positives.**
+## Demo
 
-#### Number of Instances
+> 📸 _Screenshots of the deployed application are in the [`Screenshots/`](Screenshots/) folder._
 
-- The training set contains 60000 examples in total in which 59000 belong to the negative class and 1000 positive class. The test set contains 16000 examples.
-- Number of Attributes: 171
-- It is an **imbalanced** dataset
+| Pipeline Flow | Deployment Architecture |
+|---|---|
+| ![Pipeline](flowcharts/APS%20Failure%20Classification%20High%20Level%20Code%20Flow.png) | ![Deployment](flowcharts/Deployment%20Architecture.png) |
 
-## Tech Stack used
-1. Python
-2. Machine Learning
-3. FastAPI
-4. Docker
-5. MongoDB
+---
 
-## Infrastructure used
-1. Amazon S3
-2. Amazon EC2
-3. Amazon ECR
-4. GitHub Actions
+## Tech Stack
 
-## Architectures
-### Project Architecture
-![APS Failure Classification High Level Code Flow](flowcharts/APS%20Failure%20Classification%20High%20Level%20Code%20Flow.png)
-### Deployment Architecture
-![Deployment Architecture](flowcharts/Deployment%20Architecture.png)
-## How to run?
+| Layer | Technology |
+|---|---|
+| **Language** | Python 3.11 |
+| **ML / Data** | XGBoost, scikit-learn, imbalanced-learn (SMOTETomek), pandas, NumPy |
+| **API** | FastAPI, Uvicorn, Starlette |
+| **UI** | Streamlit |
+| **Database** | MongoDB Atlas (pymongo) |
+| **Cloud Storage** | AWS S3 |
+| **Containerization** | Docker |
+| **CI/CD** | GitHub Actions → AWS ECR → EC2 self-hosted runner |
+| **Config** | YAML, python-dotenv |
+| **Serialization** | dill, NumPy `.npy` |
 
-### Running the app locally using GitHub repository
+---
 
-#### Step 1: Clone the repository
-```pycon
-git clone https://github.com/tchandrareddy21/APS-failure-classification.git
+## Features
+
+- **Automated 6-stage ML pipeline** — Ingestion → Validation → Transformation → Training → Evaluation → Deployment, all triggered via a single API call
+- **Cost-aware evaluation** — False negatives carry 50× the cost of false positives; model acceptance uses F1-score with improvement thresholds
+- **Dataset drift detection** — Kolmogorov-Smirnov tests across all 171 features generate per-feature drift reports before training
+- **Imbalanced dataset handling** — SMOTETomek resampling on a 98.3% negative class dataset (59,000 negative / 1,000 positive)
+- **Model versioning** — Each training run saves timestamped artifacts; `ModelResolver` automatically selects the best available model for inference
+- **Cloud-backed artifacts** — All pipeline artifacts and trained models are synced to AWS S3 after each run
+- **REST API for training and prediction** — `GET /train` triggers the full pipeline; `POST /predict` accepts CSV input and returns per-row predictions
+- **Streamlit UI** — Alternative frontend supporting CSV file upload or direct MongoDB data fetch for batch prediction
+- **Dockerized deployment** — Reproducible container with AWS CLI; deployed to EC2 via GitHub Actions self-hosted runner
+
+---
+
+## Architecture
+
 ```
-#### Step 2: Create the conda environment and activate the environment
-```pycon
-conda create -n aps-failure-classification python=3.11 -y
-```
-```pycon
-conda activate aps-failure-classification
+┌─────────────────────────────────────────────────────────────────────┐
+│                         TRAINING PIPELINE                           │
+│                                                                     │
+│  MongoDB ──► DataIngestion ──► DataValidation ──► DataTransform    │
+│                (CSV export)      (KS drift,         (Imputer +      │
+│                (80/20 split)      schema check)      RobustScaler + │
+│                                                       SMOTETomek)   │
+│                                                            │         │
+│  S3 Sync ◄── ModelPusher ◄── ModelEvaluation ◄── ModelTrainer     │
+│  (artifacts)   (timestamp       (F1 delta          (XGBClassifier  │
+│               versioning)        >= 0.02)           F1 >= 0.6)     │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────┐     ┌──────────────────────────────┐
+│       INFERENCE API          │     │       CI/CD PIPELINE         │
+│                              │     │                              │
+│  POST /predict               │     │  push → GitHub Actions       │
+│    CSV input                 │     │    → Docker build            │
+│    → SensorModel.predict()   │     │    → push to ECR             │
+│    → JSON output             │     │    → EC2 self-hosted runner  │
+│                              │     │    → docker run              │
+└──────────────────────────────┘     └──────────────────────────────┘
 ```
 
-#### Step 3: Install the requirements
-```pycon
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.11+
+- Docker (optional, for containerized run)
+- MongoDB Atlas account (or local MongoDB)
+- AWS account with S3, ECR, EC2 access (for cloud deployment)
+
+### Installation
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/iamchandra21/APS-failure-classification.git
+cd APS-failure-classification
+
+# 2. Create and activate a virtual environment
+python -m venv venv
+source venv/bin/activate       # Linux/macOS
+venv\Scripts\activate          # Windows
+
+# 3. Install dependencies
 pip install -r requirements.txt
+
+# 4. Install the sensor package in editable mode
+pip install -e .
 ```
 
-#### Step 4: Create .env file and add the secrets
-```pycon
-touch .env
+### Environment Setup
+
+Create a `.env` file in the project root:
+
+```env
+MONGO_DB_URL=mongodb+srv://<username>:<password>@cluster.mongodb.net/
+AWS_ACCESS_KEY_ID=your_access_key
+AWS_SECRET_ACCESS_KEY=your_secret_key
+AWS_REGION=us-east-1
 ```
 
-```python
-AWS_ACCESS_KEY_ID=""
-AWS_SECRET_ACCESS_KEY=""
-AWS_DEFAULT_REGION=""
-MONGODB_URL=""
+> ⚠️ Never commit your `.env` file. It is listed in `.gitignore`.
+
+### Run Locally
+
+```bash
+# Start the FastAPI server
+python main.py
+# → Runs on http://0.0.0.0:8080
+# → API docs at http://localhost:8080/docs
+
+# Trigger training via API
+curl http://localhost:8080/train
+
+# Predict via API (CSV file)
+curl -X POST http://localhost:8080/predict \
+  -F "file=@path/to/input.csv"
+
+# Or run the Streamlit UI
+streamlit run streamlit_app.py
 ```
 
-#### Step 5: Run the application
-```pycon
-python app.py
-```
-- To train the model use train route
-```pycon
-http://localhost:8080 
-```
-- To predict on new data use predict route
-```pycon
-http://localhost:8080
+### Run with Docker
+
+```bash
+# Build the image
+docker build -t aps-failure-classification .
+
+# Run the container
+docker run -p 8080:8080 \
+  -e MONGO_DB_URL=$MONGO_DB_URL \
+  -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
+  -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
+  -e AWS_REGION=$AWS_REGION \
+  aps-failure-classification
 ```
 
-### Running the app using Docker
+---
 
-#### Step 1: Check if Dockerfile is available in the project directory
+## Folder Structure
 
-#### Step 2: Build the docker image by replacing with your secrets values
-```pycon
-docker build -t aps-failure-classification \
-    --build-arg AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID> \
-    --build-arg AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS_KEY> \
-    --build-arg AWS_DEFAULT_REGION=<AWS_DEFAULT_REGION> \
-    --build-arg MONGODB_URL=<MONGODB_URL> .
 ```
-#### Step 3: when you run the below command it will show the docker image with name _**aps-failure-classification**_
-```pycon
-docker images
-```
-
-#### Step 4: To run the docker image
-```pycon
-docker run -d -p 8080:8080 aps-failure-classification
-```
-- To train the model
-```pycon
-http://localhost:8080/train 
-```
-- To predict on new data
-```pycon
-http://localhost:8080/predict
-```
-
-[Deployement Screenshots PPT for reference](https://docs.google.com/presentation/d/e/2PACX-1vQ5MLOAUhE6n4EXVQXxwMnJL2lTBNekVSFqYhj5PBYdo9aN36ZvTlcynu8Xbuv_0bUYYzuKKcehweP3/pub?start=false&loop=false&delayms=3000)
-
-### To deploy the project to cloud (AWS Account is needed)
-#### Step 1: Create an AWS account and then login to your account
-#### Step 2: You can use your root account or create a new account by using AWS Identity and Access Management (IAM) service (Best create an IAM user).
-#### Step 3: Create an IAM user and add the following policies:
-- AmazonS3FullAccess => To Store artifacts and models
-- AmazonEC2FullAccess => It is used to create a virtual machine
-- EC2InstanceConnect => To connect to virtual machine
-- AmazonEC2ContainerRegistryFullAccess => To save docker image in AWS
-
-
-```pycon
-AmazonS3FullAccess
-AmazonEC2FullAccess
-EC2InstanceConnect
-AmazonEC2ContainerRegistryFullAccess
+APS-failure-classification/
+├── .github/
+│   └── workflows/
+│       └── main.yml            # GitHub Actions CI/CD (lint → build → ECR → EC2)
+├── config/
+│   └── schema.yaml             # Data schema: 171 columns, drop list, numerical cols
+├── flowcharts/                 # Architecture and pipeline diagrams
+├── notebooks/
+│   └── Scania_APS_failure_prediction.ipynb  # EDA and baseline experiments
+├── Screenshots/                # Deployment documentation screenshots
+├── sensor/                     # Main application package
+│   ├── cloud_storage/          # AWS S3 sync utilities
+│   ├── components/             # Core pipeline stages (6 components)
+│   ├── configuration/          # MongoDB connection setup
+│   ├── constants/              # All magic numbers and path constants
+│   ├── data_access/            # MongoDB → DataFrame export layer
+│   ├── entity/                 # Config & artifact dataclasses
+│   ├── ml/
+│   │   ├── metric/             # F1, precision, recall computation
+│   │   └── model/              # SensorModel wrapper, ModelResolver
+│   ├── pipeline/
+│   │   └── training_pipeline.py  # Orchestrates all 6 pipeline stages
+│   ├── utils/                  # YAML, numpy, dill serialization helpers
+│   ├── exception.py            # Custom SensorException with traceback detail
+│   └── logger.py               # Timestamped log files in logs/
+├── main.py                     # FastAPI entrypoint
+├── streamlit_app.py            # Streamlit UI frontend
+├── Dockerfile                  # Production container definition
+├── requirements.txt            # Python dependencies
+├── setup.py                    # Package setup
+└── runtime.txt                 # Deployment Python version (3.11.13)
 ```
 
-#### Step 4: Create S3 bucket
-- While creating the S3 bucket, the name should be unique.
+---
 
-#### Step 5: Create ECR repository to store / save docker image
+## API Reference
 
-#### Step 6: Create EC2 machine
-1. Give the names as 'aps-failure-classification'
-2. Choose AMI as ubuntu machine.
-3. t2.small is an instance type.
-4. If you want to connect with putty, create a .pem file.
-5. For network select http, https and allow from anywhere.
-6. Use 16GB as storage
-&. Now review the settings and launch the instance.
+### `GET /train`
 
-#### Step 7: Select the machine and click on connect
+Triggers the full 6-stage training pipeline.
 
-#### Step 8: Install Docker in EC2 machine
-```pycon
-sudo apt update -y
-```
-```pycon
-sudo apt upgrade -y
-```
-```pycon
-curl -fsSL https://get.docker.com -o get-docker.sh
-```
-```pycon
-sudo sh get-docker.sh
-```
-- Every time if you want to run commands, you need to use **_sudo_**. To avoid it run the below command
-```pycon
-sudo usermod -aG docker ubuntu
-```
-```pycon
-newgrp docker
+**Response:**
+```json
+{
+  "status": "Training successful"
+}
 ```
 
-#### Step 9: Configure EC2 as self-hosted runner
-1. Open your GitHub repository.
-2. Go to the APS-failure-classification repository and then click on settings.
-3. Now go to Actions, and then select runner.
-4. Select Linux and run the commands show there in EC2.
-    ```pycon
-    Group name: keep default (press enter)
-    name of the runner: self-hosted
-    addition label: keep default (press enter)
-    work folder: keep default (press enter)
-    ```
-5. To activate runner, execute below command
-    ```pycon
-   ./run.sh
-    ```
-6. Go to Actions secrets and variables and then add the secrets
-   ```pycon
-   AWS_ACCESS_KEY_ID
-   AWS_SECRET_ACCESS_KEY
-   AWS_REGION
-   AWS_ECR_LOGIN_URI
-   ECR_REPOSITORY_NAME
-   MONGO_DB_URL
-   ```
-7. Now go to do any changes(other than README.md) in the repository code and push it. It will start the workflow.
-8. Now go to EC2 dashboard and open public DNS url and then remove **_`s`_** from **`https`** then url may lokk like similir to below one.
-   ```pycon
-   http://ec2-3-93-46-151.compute-1.amazonaws.com/
-   ```
-10. In the UI shown select the train route to train the model or predict route to predict the route
-   
+---
+
+### `POST /predict`
+
+Accepts a CSV file and returns binary predictions for each row.
+
+**Request:** `multipart/form-data` with field `file` (`.csv`)
+
+**Response:**
+```json
+{
+  "status": "success",
+  "predictions": [0, 1, 0, 0, 1]
+}
+```
+
+**Label mapping:**
+- `0` → `neg` — No APS failure detected
+- `1` → `pos` — APS failure detected
+
+---
+
+## Dataset
+
+The project uses the **Scania APS Failure Dataset** (UCI ML Repository).
+
+| Property | Value |
+|---|---|
+| Training examples | 60,000 |
+| Test examples | 16,000 |
+| Features | 171 anonymized sensor attributes |
+| Positive class (APS failure) | ~1.7% |
+| Missing values | Encoded as `"na"` string |
+| Imputation strategy | Constant fill (0) |
+| Resampling | SMOTETomek |
+
+**Cost Matrix:**
+- False Positive (unnecessary repair): **Cost₁**
+- False Negative (missed APS fault): **Cost₂ = 50 × Cost₁**
+
+---
+
+## CI/CD Pipeline
+
+```
+Developer Push
+     │
+     ▼
+GitHub Actions
+     ├── Lint (flake8)
+     ├── Unit Tests (pytest)
+     ├── Docker Build
+     ├── Push to AWS ECR
+     └── Deploy to EC2 (self-hosted runner)
+              └── docker pull + docker run -p 80:8080
+```
+
+**Required GitHub Secrets:**
+```
+AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY
+AWS_REGION
+ECR_REPOSITORY_NAME
+AWS_ECR_LOGIN_URI
+MONGO_DB_URL
+```
+
+---
+
+## Future Improvements / Roadmap
+
+- [ ] **Hyperparameter tuning** — Implement the `perform_hyperparameter_tuning()` stub using Optuna or GridSearchCV
+- [ ] **Unit test coverage** — Add `tests/` with pytest coverage for all 6 pipeline components
+- [ ] **Custom cost metric** — Replace F1-score objective with a cost-weighted metric (`50×FN + FP`)
+- [ ] **SHAP explainability** — Add feature importance analysis and SHAP summary plots
+- [ ] **Prediction confidence scores** — Return `predict_proba` alongside binary labels
+- [ ] **Model monitoring** — Add prediction drift detection in production
+- [ ] **Async training endpoint** — Background task with status polling endpoint
+- [ ] **Kubernetes deployment** — Replace single EC2 instance with EKS for auto-scaling
+- [ ] **MLflow / W&B integration** — Experiment tracking and model registry
+
+---
+
+## License
+
+This project is licensed under the [Apache License 2.0](LICENSE).
+
+---
+
+## Author
+
+**Tiyyagura Chandra Reddy**
+
+[![GitHub](https://img.shields.io/badge/GitHub-Profile-181717?logo=github)](https://github.com/iamchandra21)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2?logo=linkedin)](https://linkedin.com/in/iamchandra21)
+[![Email](https://img.shields.io/badge/Email-chandra.tiyyagura%40gmail.com-D14836?logo=gmail&logoColor=white)](mailto:chandra.tiyyagura@gmail.com)
+
+---
+
+> _Built to demonstrate production-grade ML engineering: modular pipeline design, cloud infrastructure, and automated deployment._

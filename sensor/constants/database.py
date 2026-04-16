@@ -1,2 +1,2 @@
-DATABASE_NAME = "sensor_fault_detection"
+DATABASE_NAME = "ML"
 COLLECTION_NAME = "sensor"
