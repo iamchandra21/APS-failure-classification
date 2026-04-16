@@ -1,6 +1,6 @@
 """
 Tests for sensor/components/data_validation.py
-All MongoDB and filesystem calls are mocked — no external dependencies needed.
+All MongoDB and filesystem calls are mocked -- no external dependencies needed.
 """
 import pytest
 import pandas as pd
@@ -10,7 +10,7 @@ from unittest.mock import patch
 from sensor.components.data_validation import DataValidation
 
 
-# ── Helpers ────────────────────────────────────────────────────────────────
+# -- Helpers ------------------------------------------------------------------
 
 def _make_validator(schema_config, ingestion_artifact, validation_config):
     """Build a DataValidation instance with a patched schema."""
@@ -21,7 +21,7 @@ def _make_validator(schema_config, ingestion_artifact, validation_config):
         return DataValidation(ingestion_artifact, validation_config)
 
 
-# ── validate_number_of_columns ─────────────────────────────────────────────
+# -- validate_number_of_columns -----------------------------------------------
 
 class TestValidateNumberOfColumns:
     def test_returns_true_when_column_count_matches(
@@ -45,7 +45,7 @@ class TestValidateNumberOfColumns:
         assert validator.validate_number_of_columns(wide_df) is False
 
 
-# ── is_numerical_column_exist ──────────────────────────────────────────────
+# -- is_numerical_column_exist ------------------------------------------------
 
 class TestIsNumericalColumnExist:
     def test_returns_true_when_all_numerical_columns_present(
